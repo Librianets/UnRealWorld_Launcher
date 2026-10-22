@@ -1,6 +1,6 @@
 # Лаунчер UnReal World
 
-Исходники GUI-лаунчера0.20: ENG/RUS/FIN, подписи English/Русский/Suomi,
+Исходники GUI-лаунчера0.21: ENG/RUS/FIN, подписи English/Русский/Suomi,
 настройки ConsoleMode0/1/2 и LoggingEnabled0/1.
 
 Сборка: Visual Studio 2022, компонент Desktop development with C++, Windows SDK.

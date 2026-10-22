@@ -1,6 +1,6 @@
 # UnReal World Launcher
 
-Windows launcher for the UnReal World translation project, version 0.20.
+Windows launcher for the UnReal World translation project, version 0.21.
 Choose ENG, RUS or FIN, switch interface labels between English, Russian and
 Finnish, and configure the translation console and session logging.
 
