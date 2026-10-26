@@ -1,6 +1,6 @@
 # Лаунчер UnReal World
 
-Исходники GUI-лаунчера0.24: ENG/RUS/FIN, подписи English/Русский/Suomi,
+Исходники GUI-лаунчера0.25: ENG/RUS/FIN, подписи English/Русский/Suomi,
 настройки ConsoleMode0/1/2 и LoggingEnabled0/1.
 
 Сборка: Visual Studio 2022, компонент Desktop development with C++, Windows SDK.
@@ -16,7 +16,7 @@
 внедрения DLL находится во втором проекте. Состояние лицензии нашего кода
 описано в LICENSE_SCOPE.txt. Локальные EXE, журналы и игра в Git не включаются.
 
-## Запуск из Steam (0.24)
+## Запуск из Steam (0.25)
 
 В блоке «Запуск из Steam» выберите язык, нажмите «Сменить язык игры», затем
 «Включить». Запускайте кнопкой Steam. Оригинал — urw-original.exe, на месте
@@ -31,9 +31,9 @@ English запускается без DLL. Отключение режима: «
 
 Сначала соберите загрузчик HookTranslate, затем GUI: build.cmd берёт его SHA
 из локального URWTrace.exe либо соседнего проекта. Если файла нет, заголовок
-содержит SHA опубликованного bootstrap0.24. Произвольные версии не смешивать.
+содержит SHA опубликованного bootstrap0.25. Произвольные версии не смешивать.
 
-##0.24 / 26 October2026
+##0.25 / 26 October2026
 
 Linen, hemp and nettle yarn now belong to the shared item grammar, including
 length suffixes and item descriptions. The new entries are editable in each
@@ -41,3 +41,24 @@ language catalogue. Game identifiers and crafting logic remain unchanged.
 Includes0.23 presentation-only parsing of L inspection and F2 journal blocks.
 L was confirmed by a player. Actual F2 quest gameplay needs more feedback.
 Unknown spans remain English. No new native hook addresses were added.
+
+## 0.25: обновления и редакции
+
+Кнопка «Проверить обновления» обращается к последнему стабильному релизу GitHub.
+По умолчанию обычная редакция обновляется на обычную, Lite — на Lite. Можно
+выбрать другую редакцию и перейти на неё в пределах той же опубликованной версии.
+Установка выполняется после подтверждения. Нужен Windows PowerShell 5.1,
+который входит в Windows 10/11.
+
+URWUpdater.ps1 проверяет SHA-256 архива и файлов, сохраняет настройки INI,
+делает резервную копию заменяемых файлов и обновляет копию загрузчика Steam.
+Редактура переводов заменяется файлами релиза; URW_update_backup хранит копию
+только перед одним последним обновлением. Важные правки сохраняйте отдельно.
+При ошибке выполняется откат, после прерывания — попытка восстановления при
+следующей проверке. При переходе на Lite удаляются только известные файлы
+редактора. Посторонние файлы и сохранения не затрагиваются. Игра должна быть закрыта.
+
+После ручной распаковки ZIP лаунчер замечает устаревший загрузчик и предлагает
+«Обновить загрузчик Steam». Неполный комплект отличается от устаревшей копии.
+В пакете 0.25 изменены GUI, установщик обновлений и документация; загрузчик,
+DLL и каталоги переводов сохранены из 0.24.

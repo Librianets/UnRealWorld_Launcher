@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "GUI opens",
+      "passed": true
+    },
+    {
+      "name": "RU outdated notice",
+      "passed": true
+    },
+    {
+      "name": "RU update button",
+      "passed": true
+    },
+    {
+      "name": "Standard is default",
+      "passed": true
+    },
+    {
+      "name": "Direct launch disabled in Steam mode",
+      "passed": true
+    },
+    {
+      "name": "localized update notice 0",
+      "passed": true
+    },
+    {
+      "name": "localized update notice 2",
+      "passed": true
+    },
+    {
+      "name": "edition choice retained across UI language",
+      "passed": true
+    },
+    {
+      "name": "repair replaces old loader",
+      "passed": true
+    },
+    {
+      "name": "repair preserves original",
+      "passed": true
+    },
+    {
+      "name": "notice clears after repair",
+      "passed": true
+    },
+    {
+      "name": "normal repair caption restored",
+      "passed": true
+    },
+    {
+      "name": "missing master is not reported healthy",
+      "passed": true
+    },
+    {
+      "name": "Steam replacement requests repair",
+      "passed": true
+    },
+    {
+      "name": "Steam replacement repaired",
+      "passed": true
+    },
+    {
+      "name": "updater receives chosen Lite",
+      "passed": true
+    },
+    {
+      "name": "updater receives root/version/parent",
+      "passed": true
+    },
+    {
+      "name": "Lite is default on Lite installation",
+      "passed": true
+    }
+  ]
+}

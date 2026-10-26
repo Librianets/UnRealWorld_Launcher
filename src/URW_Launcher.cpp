@@ -1,4 +1,4 @@
-// GUI launcher0.24. Shared multilingual bootstrap and presentation-only hook.
+// GUI launcher0.25. Shared multilingual bootstrap and presentation-only hook.
 // English launches the original game directly. No game/save/binary patches.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -16,15 +16,16 @@
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 enum {Eng=1001,Rus=1002,Fin=1003,Console0=1100,Console1=1101,Console2=1102,Logging=1110,Status=1200,UILanguage=1300,
+    UpdateCheck=1600,UpdateEdition,UpdateTitle,UpdateLabel,
     SteamInstallButton=1500,SteamRepair,SteamRestore,SteamLanguage,SteamApply,SteamTitle,SteamStatus,
     LaunchTitle=1400,EngNote,RusNote,FinNote,ConsoleTitle,LoggingTitle,LoggingHelp,UILanguageTitle};
 enum class Notice {Loaded,Saved,ReadError,EncodingError,SaveError,GameMissing,RuntimeMissing,CatalogMissing,StartError,StartedEng,StartedRus,StartedFin,Exited,Closed,SteamMessage};
 static const wchar_t* WindowClass=L"URWLauncherWindow";
 struct App {
-    HWND window=nullptr;HFONT font=nullptr;HANDLE process=nullptr;
+    HWND window=nullptr;HFONT font=nullptr;HANDLE process=nullptr,updater=nullptr;
     std::wstring root,ini;int dpi=96,console=0,ui=1;bool logging=false;std::string language="ru";
     Notice notice=Notice::Loaded;std::wstring detail;
-    ~App(){if(process)CloseHandle(process);if(font)DeleteObject(font);}
+    ~App(){if(updater)CloseHandle(updater);if(process)CloseHandle(process);if(font)DeleteObject(font);}
     int Scale(int value)const{return MulDiv(value,dpi,96);}
 };
 static App app;
@@ -186,21 +187,61 @@ static bool SaveSettings() {
     WritePrivateProfileStringW(nullptr,nullptr,nullptr,app.ini.c_str());
     StatusText(Notice::Saved);return true;
 }
+static void CheckUpdate() {
+    if(app.process||app.updater)return;
+    if(SteamInstall::Running(app.root)){StatusText(Notice::SteamMessage,T(L"Close the game first.",L"Сначала закройте игру.",L"Sulje peli ensin."));return;}
+    auto script=app.root+L"\\URWUpdater.ps1";
+    if(!Exists(script)){StatusText(Notice::SteamMessage,T(L"Extract the complete translation package first.",L"Сначала распакуйте полный комплект перевода.",L"Pura ensin koko käännöspaketti."));return;}
+    if(!SaveSettings())return;
+    wchar_t system[32768];if(!GetSystemDirectoryW(system,32768))return;
+    std::wstring powershell=std::wstring(system)+L"\\WindowsPowerShell\\v1.0\\powershell.exe";
+    int edition=(int)SendDlgItemMessageW(app.window,UpdateEdition,CB_GETCURSEL,0,0);
+    std::wstring cmd=L"\""+powershell+L"\" -NoProfile -ExecutionPolicy Bypass -File \""+script+L"\" -Root \""+app.root+L"\" -Edition "+(edition==1?L"lite":L"standard")+L" -CurrentVersion 0.25 -ParentId "+std::to_wstring(GetCurrentProcessId())+L" -UILanguage "+(app.ui==0?L"en":app.ui==2?L"fi":L"ru");
+    STARTUPINFOW si={sizeof(si)};PROCESS_INFORMATION pi={};
+    if(!CreateProcessW(powershell.c_str(),cmd.data(),nullptr,nullptr,FALSE,CREATE_NO_WINDOW,nullptr,app.root.c_str(),&si,&pi)){StatusText(Notice::StartError,Error());return;}
+    CloseHandle(pi.hThread);app.updater=pi.hProcess;SyncSteam();
+}
 static void SyncSteam() {
-    bool managed=SteamInstall::Managed(app.root),idle=!app.process;
+    if(app.updater&&WaitForSingleObject(app.updater,0)==WAIT_OBJECT_0){CloseHandle(app.updater);app.updater=nullptr;}
+    bool managed=SteamInstall::Managed(app.root),idle=!app.process&&!app.updater;
     auto state=SteamInstall::Read(app.root);
-    bool installed=SteamInstall::Own(state,SteamInstall::Hash(app.root+L"\\urw.exe"));
+    auto installedHash=SteamInstall::Hash(app.root+L"\\urw.exe");
+    bool installed=SteamInstall::Own(state,installedHash);
+    auto masterHash=installed?SteamInstall::Hash(app.root+L"\\URWTrace.exe"):std::string{};
+    bool incomplete=installed&&masterHash!=kSteamBootstrapHash;
+    bool outdated=installed&&!incomplete&&installedHash!=masterHash;
     for(int id:{Eng,Rus,Fin})EnableWindow(GetDlgItem(app.window,id),idle&&!managed);
     EnableWindow(GetDlgItem(app.window,SteamInstallButton),idle&&!managed);
     EnableWindow(GetDlgItem(app.window,SteamRepair),idle&&managed);
     EnableWindow(GetDlgItem(app.window,SteamRestore),idle&&managed);
     EnableWindow(GetDlgItem(app.window,SteamApply),idle);
+    EnableWindow(GetDlgItem(app.window,UpdateCheck),idle);
+    EnableWindow(GetDlgItem(app.window,UpdateEdition),idle);
+    bool full=Exists(app.root+L"\\rus_translate\\catalog.html");
+    SetDlgItemTextW(app.window,UpdateTitle,full?T(L"Updates — installed: Standard",L"Обновления — установлена обычная редакция",L"Päivitykset — asennettu: tavallinen"):T(L"Updates — installed: Lite",L"Обновления — установлена Lite",L"Päivitykset — asennettu: Lite"));
+    SetDlgItemTextW(app.window,UpdateCheck,T(L"Check for updates",L"Проверить обновления",L"Tarkista päivitykset"));
+    SetDlgItemTextW(app.window,UpdateLabel,T(L"Update edition:",L"Редакция для обновления:",L"Päivityspaketti:"));
+    auto combo=GetDlgItem(app.window,UpdateEdition);
+    int selected=(int)SendMessageW(combo,CB_GETCURSEL,0,0);if(selected<0)selected=full?0:1;
+    // Only recreate captions when the UI language changes; keep user's choice.
+    if((int)GetWindowLongPtrW(combo,GWLP_USERDATA)!=app.ui+1){
+      SendMessageW(combo,CB_RESETCONTENT,0,0);
+      SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)T(L"Standard",L"Обычная",L"Tavallinen"));
+      SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)T(L"Lite",L"Облегчённая (Lite)",L"Lite"));
+      SendMessageW(combo,CB_SETCURSEL,selected,0);SetWindowLongPtrW(combo,GWLP_USERDATA,app.ui+1);
+    }
     SetDlgItemTextW(app.window,SteamTitle,T(L"Launch from Steam",L"Запуск из Steam",L"Käynnistys Steamista"));
     SetDlgItemTextW(app.window,SteamInstallButton,T(L"Enable",L"Включить",L"Ota käyttöön"));
-    SetDlgItemTextW(app.window,SteamRepair,T(L"Repair after update",L"Восстановить после обновления",L"Korjaa päivityksen jälkeen"));
+    SetDlgItemTextW(app.window,SteamRepair,outdated?
+      T(L"Update Steam loader",L"Обновить загрузчик Steam",L"Päivitä Steam-käynnistin"):
+      T(L"Repair after update",L"Восстановить после обновления",L"Korjaa päivityksen jälkeen"));
     SetDlgItemTextW(app.window,SteamRestore,T(L"Restore original",L"Вернуть оригинальный запуск",L"Palauta alkuperäinen"));
     SetDlgItemTextW(app.window,SteamApply,T(L"Change game language",L"Сменить язык игры",L"Vaihda pelin kieli"));
-    SetDlgItemTextW(app.window,SteamStatus,managed?(installed?
+    SetDlgItemTextW(app.window,SteamStatus,managed?(incomplete?
+      T(L"Translation package is incomplete or mixed. Extract the complete matching package.",L"Файлы перевода отсутствуют или относятся к разным версиям. Распакуйте полный комплект.",L"Käännöspaketti on puutteellinen tai versiot eivät täsmää. Pura koko oikea paketti."):
+      outdated?
+      T(L"Translation updated. Click Update Steam loader before launching in Steam.",L"Перевод обновлён. Нажмите «Обновить загрузчик Steam» перед запуском из Steam.",L"Käännös on päivitetty. Paina Päivitä Steam-käynnistin ennen käynnistystä Steamista."):
+      installed?
       T(L"Enabled. Launch in Steam; change the language here.",L"Включено. Запускайте из Steam; язык меняется здесь.",L"Käytössä. Käynnistä Steamista; vaihda kieli täällä."):
       T(L"Needs repair or rollback. Direct launch is disabled.",L"Требуется восстановление или откат. Прямой запуск отключён.",L"Korjaa tai palauta. Suora käynnistys on estetty.")):
       T(L"Disabled. Select a game language before enabling.",L"Выключено. Перед включением выберите язык игры.",L"Ei käytössä. Valitse pelin kieli ennen käyttöönottoa."));
@@ -243,7 +284,7 @@ static void SteamAction(int id) {
     StatusText(Notice::SteamMessage,message);SyncSteam();
 }
 static void Start(int id) {
-    if(app.process||SteamInstall::Managed(app.root))return;
+    if(app.process||app.updater||SteamInstall::Managed(app.root))return;
     const bool translated=id!=Eng;const std::wstring game=GamePath(),program=translated?app.root+L"\\URWTrace.exe":game;
     if(!Exists(game)){StatusText(Notice::GameMissing);return;}
     if(!Exists(program)||(translated&&!Exists(app.root+L"\\URWTraceHook.dll"))){StatusText(Notice::RuntimeMissing);return;}
@@ -294,7 +335,11 @@ static LRESULT CALLBACK WindowProc(HWND window,UINT message,WPARAM wParam,LPARAM
         Control(L"BUTTON",L"",WS_TABSTOP|BS_PUSHBUTTON,146,390,260,34,SteamRepair);
         Control(L"BUTTON",L"",WS_TABSTOP|BS_PUSHBUTTON,414,390,232,34,SteamRestore);
         Control(L"STATIC",L"",SS_LEFT,34,436,610,42,SteamStatus);
-        Control(L"STATIC",L"",SS_LEFT,20,500,640,70,Status);
+        Control(L"BUTTON",L"",BS_GROUPBOX,20,492,640,92,UpdateTitle);
+        Control(L"STATIC",L"",0,34,514,230,22,UpdateLabel);
+        Control(L"COMBOBOX",L"",WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST,34,540,206,130,UpdateEdition);
+        Control(L"BUTTON",L"",WS_TABSTOP|BS_PUSHBUTTON,260,538,386,30,UpdateCheck);
+        Control(L"STATIC",L"",SS_LEFT,20,596,640,70,Status);
         LoadSettings();SetTimer(window,2,2000,nullptr);return 0;
     case WM_COMMAND:
         if(LOWORD(wParam)==UILanguage&&HIWORD(wParam)==CBN_SELCHANGE){
@@ -303,6 +348,7 @@ static LRESULT CALLBACK WindowProc(HWND window,UINT message,WPARAM wParam,LPARAM
         }
         if(HIWORD(wParam)==BN_CLICKED) {
             int id=LOWORD(wParam);
+            if(id==UpdateCheck){CheckUpdate();return 0;}
             if(id==SteamInstallButton||id==SteamRepair||id==SteamRestore||id==SteamApply){SteamAction(id);return 0;}
             if(id==Eng||id==Rus||id==Fin){Start(id);return 0;}
             if((id>=Console0&&id<=Console2)||id==Logging){
@@ -331,7 +377,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
     app.font=CreateFontW(-MulDiv(10,app.dpi,72),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Segoe UI");
     WNDCLASSEXW cls={sizeof(cls)};cls.lpfnWndProc=WindowProc;cls.hInstance=instance;cls.lpszClassName=WindowClass;cls.hCursor=LoadCursorW(nullptr,IDC_ARROW);cls.hIcon=LoadIconW(nullptr,IDI_APPLICATION);cls.hbrBackground=(HBRUSH)(COLOR_BTNFACE+1);
     if(!RegisterClassExW(&cls))return 2;
-    DWORD style=WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX;RECT size={0,0,app.Scale(680),app.Scale(584)};AdjustWindowRectEx(&size,style,FALSE,0);
+    DWORD style=WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX;RECT size={0,0,app.Scale(680),app.Scale(680)};AdjustWindowRectEx(&size,style,FALSE,0);
     HWND window=CreateWindowExW(0,WindowClass,L"UnReal World — запуск",style,CW_USEDEFAULT,CW_USEDEFAULT,size.right-size.left,size.bottom-size.top,nullptr,nullptr,instance,nullptr);
     if(!window)return 3;ShowWindow(window,show);UpdateWindow(window);
     MSG message;while(GetMessageW(&message,nullptr,0,0)>0){if(!IsDialogMessageW(window,&message)){TranslateMessage(&message);DispatchMessageW(&message);}}
