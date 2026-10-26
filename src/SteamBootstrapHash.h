@@ -1,2 +1,2 @@
 #pragma once
-inline constexpr const char* kSteamBootstrapHash = "ab275217e740a55bf452a7d227dcb5fdb8203b930f4194e4406689a506b307bf";
+inline constexpr const char* kSteamBootstrapHash = "e22dbbbb5a93d6bd4b3352d98fb0972fb5dd3a247faef18df6941d81db488c87";

@@ -1,6 +1,6 @@
 # UnReal World Launcher
 
-Windows launcher for the UnReal World translation project, version 0.22.
+Windows launcher for the UnReal World translation project, version 0.24.
 Choose ENG, RUS or FIN, switch interface labels between English, Russian and
 Finnish, and configure the translation console and session logging.
 
@@ -30,7 +30,7 @@ Git. See `LICENSE_SCOPE.txt` for the scope and current licensing status.
 The launcher source is kept separate so GUI work does not require rebuilding
 the translation DLL. See [Russian instructions](README_RU.md).
 
-## Steam launch mode (0.22)
+## Steam launch mode (0.24)
 
 In the launcher, choose the game language under **Launch from Steam**, click
 **Change game language**, then **Enable**. Use Steam's Play button afterwards.
@@ -47,7 +47,16 @@ preserved under SHA256-based filenames. Do not delete `URWSteam.state` manually.
 
 Build the HookTranslate bootstrap first, then this GUI. `build.cmd` derives
 the master-loader hash from local `URWTrace.exe` or the sibling hook build.
-Without either, the committed header targets the published0.22 bootstrap.
+Without either, the committed header targets the published0.24 bootstrap.
 Installation checks this hash; do not mix an unrelated GUI and bootstrap.
 Game code bytes are not patched. The GUI does rename/replace installation
 files only when the user explicitly enables, repairs or restores Steam mode.
+
+##0.24 / 26 October2026
+
+Linen, hemp and nettle yarn now belong to the shared item grammar, including
+length suffixes and item descriptions. The new entries are editable in each
+language catalogue. Game identifiers and crafting logic remain unchanged.
+Includes0.23 presentation-only parsing of L inspection and F2 journal blocks.
+L was confirmed by a player. Actual F2 quest gameplay needs more feedback.
+Unknown spans remain English. No new native hook addresses were added.

@@ -1,4 +1,4 @@
-// GUI launcher0.22. Shared multilingual bootstrap and presentation-only hook.
+// GUI launcher0.24. Shared multilingual bootstrap and presentation-only hook.
 // English launches the original game directly. No game/save/binary patches.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
