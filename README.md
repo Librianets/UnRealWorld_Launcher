@@ -1,8 +1,12 @@
 # UnReal World Launcher
 
-Windows launcher for the UnReal World translation project, version 0.25.
+Windows launcher for the UnReal World translation project, version 0.26.
 Choose ENG, RUS or FIN, switch interface labels between English, Russian and
 Finnish, and configure the translation console and session logging.
+
+## 0.26 — quest journal
+
+Improves F2 journal translation in Russian and Finnish: herb quantities, animal names, older quest givers, player-name substitutions and compound location descriptions. Longer entries are supported; unknown paragraphs remain in English while known paragraphs can still translate. Use the matching 0.26 DLL and catalogues together.
 
 ## Build
 

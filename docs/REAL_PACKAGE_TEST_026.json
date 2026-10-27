@@ -1,0 +1,58 @@
+﻿{
+    "status":  "PASS",
+    "checks":  [
+                   {
+                       "name":  "lite original unchanged",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "lite Steam loader matches master",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "lite settings preserved",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "lite foreign notes preserved",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "lite editor layout",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "custom translation backed up",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "lite all installed files match package",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard original unchanged",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard Steam loader matches master",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard settings preserved",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard foreign notes preserved",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard editor layout",
+                       "passed":  true
+                   },
+                   {
+                       "name":  "standard all installed files match package",
+                       "passed":  true
+                   }
+               ],
+    "game_started":  false
+}
