@@ -1,8 +1,12 @@
 # UnReal World Launcher
 
-Windows launcher for the UnReal World translation project, version 0.26.
+Windows launcher for the UnReal World translation project, version 0.28.
 Choose ENG, RUS or FIN, switch interface labels between English, Russian and
 Finnish, and configure the translation console and session logging.
+
+## 0.28 — quest conversations and herbal information
+
+Fixes the chosen dialogue line repeated after selecting an answer, and NPC replies embedded in generated quest conversations. Includes 0.27 improvements to herbal-information cards and effect lists. Russian and Finnish are supported. Use matching 0.28 package components together.
 
 ## 0.26 — quest journal
 

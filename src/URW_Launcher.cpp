@@ -1,4 +1,4 @@
-// GUI launcher0.26. Shared multilingual bootstrap and presentation-only hook.
+// GUI launcher0.28. Shared multilingual bootstrap and presentation-only hook.
 // English launches the original game directly. No game/save/binary patches.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -196,7 +196,7 @@ static void CheckUpdate() {
     wchar_t system[32768];if(!GetSystemDirectoryW(system,32768))return;
     std::wstring powershell=std::wstring(system)+L"\\WindowsPowerShell\\v1.0\\powershell.exe";
     int edition=(int)SendDlgItemMessageW(app.window,UpdateEdition,CB_GETCURSEL,0,0);
-    std::wstring cmd=L"\""+powershell+L"\" -NoProfile -ExecutionPolicy Bypass -File \""+script+L"\" -Root \""+app.root+L"\" -Edition "+(edition==1?L"lite":L"standard")+L" -CurrentVersion 0.26 -ParentId "+std::to_wstring(GetCurrentProcessId())+L" -UILanguage "+(app.ui==0?L"en":app.ui==2?L"fi":L"ru");
+    std::wstring cmd=L"\""+powershell+L"\" -NoProfile -ExecutionPolicy Bypass -File \""+script+L"\" -Root \""+app.root+L"\" -Edition "+(edition==1?L"lite":L"standard")+L" -CurrentVersion 0.28 -ParentId "+std::to_wstring(GetCurrentProcessId())+L" -UILanguage "+(app.ui==0?L"en":app.ui==2?L"fi":L"ru");
     STARTUPINFOW si={sizeof(si)};PROCESS_INFORMATION pi={};
     if(!CreateProcessW(powershell.c_str(),cmd.data(),nullptr,nullptr,FALSE,CREATE_NO_WINDOW,nullptr,app.root.c_str(),&si,&pi)){StatusText(Notice::StartError,Error());return;}
     CloseHandle(pi.hThread);app.updater=pi.hProcess;SyncSteam();
