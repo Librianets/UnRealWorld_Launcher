@@ -51,7 +51,7 @@ preserved under SHA256-based filenames. Do not delete `URWSteam.state` manually.
 
 Build the HookTranslate bootstrap first, then this GUI. `build.cmd` derives
 the master-loader hash from local `URWTrace.exe` or the sibling hook build.
-Without either, the committed header targets the published0.25 bootstrap.
+Without either, the committed header targets the published0.26 bootstrap.
 Installation checks this hash; do not mix an unrelated GUI and bootstrap.
 Game code bytes are not patched. The GUI does rename/replace installation
 files only when the user explicitly enables, repairs or restores Steam mode.
